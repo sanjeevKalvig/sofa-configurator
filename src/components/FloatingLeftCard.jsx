@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Grid3x3, Palette, Sofa } from "lucide-react";
 import { getMaterialsByCategories } from '../config/getterMappedDatafunctions';
 import { useProductPricing } from '../hooks/useProductPricing';
-import styles from '../styleSheet/ToggleSwtich.module.css';
+import styles from '../stylesheet/ToggleSwtich.module.css';
 
 function FloatingLeftCart({ showMeasurements, setShowMeasurements }) {
   const swatches = getMaterialsByCategories();
