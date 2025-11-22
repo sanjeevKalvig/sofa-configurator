@@ -211,16 +211,26 @@ export async function removeGuestCartItem(cartId, itemId) {
 }
 
 // Fetch product data and prices
-export async function fetchProductData() {
+export async function fetchProductData(sku = "UDSOFA-PARENT") {
   try {
-    console.log('Fetching product data via Vite proxy...');
-    const response = await fetch('/custom-sofa-json.php?sku=UDSOFA-PARENT');
-    if (!response.ok) throw new Error('Failed to fetch product data');
-    const data = await response.json();
-    console.log('Product data loaded successfully');
-    return data;
+    const isLocal = import.meta.env.DEV;  // Local Vite dev mode?
+    
+    const url = isLocal
+      ? `/custom-sofa-json.php?sku=${sku}`            // Local PHP direct
+      : `/api/custom-sofa-json?sku=${sku}`;           // Vercel proxy
+
+    console.log("Fetching product data:", url);
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch product data: " + (await response.text()));
+    }
+
+    return await response.json();
+
   } catch (error) {
-    console.error('Error fetching product data:', error);
+    console.error("Error fetching product data:", error);
     throw error;
   }
 }
