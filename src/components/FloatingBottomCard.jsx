@@ -1,120 +1,94 @@
 import React, { useState } from "react";
-import { ShoppingCart, Minus, Plus } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { ensureGuestCartId, addConfigurableToGuestCart } from "../lib/magento";
 import { useProductPricing } from "../hooks/useProductPricing";
+import { useCart } from "../context/CartContext";
 
 function FloatingBottomCard() {
-  const [quantity, setQuantity] = useState(1);
   const [addingToCart, setAddingToCart] = useState(false);
   const {
     currentPrice,
     selectedOptions,
-    selectedOptionLabels,
     findCurrentVariant,
     loading,
     isSelectionComplete,
-    getSelectedCombinationText,
   } = useProductPricing();
-
-  const handleIncrement = () => setQuantity(quantity + 1);
-  const handleDecrement = () => {
-    if (quantity > 1) setQuantity(quantity - 1);
-  };
+  const { refreshCart, cartCount } = useCart();
 
   const handleAddToCart = async () => {
-    if (loading || addingToCart) return;
-
+    if (loading || addingToCart || !isSelectionComplete()) return;
+    setAddingToCart(true);
     try {
-      setAddingToCart(true);
-
-      if (!isSelectionComplete()) {
-        alert(
-          "Please select all material options (Cushion, Fabric, and Legs) before adding to cart."
-        );
-        return;
-      }
-
       const cartId = await ensureGuestCartId();
       const variant = findCurrentVariant();
-
-      if (!variant) {
-        alert(
-          "Selected combination not available. Please try different materials."
-        );
-        return;
-      }
-
+      if (!variant) return alert("Combination unavailable.");
       await addConfigurableToGuestCart({
         cartId,
         parentSku: "UDSOFA-PARENT",
         cushionTypeId: selectedOptions.cushion_type,
         fabricMaterialId: selectedOptions.fabric_material,
         sofaLegTypeId: selectedOptions.sofa_leg_type,
-        qty: quantity,
+        qty: 1,
       });
-
-      alert("Added to cart successfully!");
-    } catch (error) {
-      console.error("Add to cart failed:", error);
-      alert("Failed to add to cart: " + error.message);
+      await refreshCart();
+    } catch {
+      alert("Add to cart failed.");
     } finally {
       setAddingToCart(false);
     }
   };
 
-  if (loading) {
+  const handleCheckout = () =>
+    ensureGuestCartId().then((id) => {
+      window.location.href = "/checkout";
+    });
+
+  if (loading)
     return (
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 pointer-events-auto z-10">
-        <div className="w-[560px] rounded-xl border border-white/10 bg-gradient-to-b from-white/[0.03] to-transparent backdrop-blur-xl shadow-xl p-2">
-          <div className="flex items-center justify-center">
-            <p className="text-slate-400 text-xs">Loading prices...</p>
-          </div>
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-20">
+        <div className="w-[400px] h-20 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 flex items-center justify-center text-slate-300 text-sm">
+          Loading…
         </div>
       </div>
     );
-  }
 
   return (
-    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 pointer-events-auto z-10">
-      <div className="w-[560px] rounded-xl border border-white/10 bg-gradient-to-b from-white/[0.03] to-transparent backdrop-blur-xl shadow-xl p-2">
-        <div className="flex items-center justify-between gap-4">
-          {/* Price & Selection */}
-          <div className="flex items-center gap-2 min-w-0 flex-1">
-            <div className="text-lg font-bold text-blue-400 flex-shrink-0">
-              ₹ {currentPrice.toLocaleString("en-IN")}
-            </div>
-            <div className="text-xs text-slate-300 truncate hidden sm:block">
-              {getSelectedCombinationText()}
-            </div>
-          </div>
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-20">
+      <div className="w-[400px] h-20 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl flex items-center px-5 gap-4 text-white">
+        {/* Price */}
+        <div className="font-bold text-cyan-400">₹{currentPrice.toLocaleString("en-IN")}</div>
 
-          {/* Controls */}
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {/* Add to Cart Button */}
-            <button
-              onClick={handleAddToCart}
-              disabled={addingToCart || !isSelectionComplete()}
-              className="flex items-center justify-center gap-1 rounded-md bg-red-500 hover:bg-red-600 px-3 py-2 text-xs font-medium text-white transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {addingToCart ? (
-                <span>Adding...</span>
-              ) : (
-                <>
-                  <ShoppingCart className="h-3 w-3" />
-                  <span>Add</span>
-                </>
-              )}
-            </button>
-          </div>
-        </div>
+        {/* Add to Cart */}
+        <button
+          onClick={handleAddToCart}
+          disabled={addingToCart || !isSelectionComplete()}
+          className="flex-1 flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold h-10"
+        >
+          {addingToCart ? (
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <>
+              <ShoppingCart className="w-4 h-4" />
+              <span>{cartCount > 0 ? `${cartCount}` : "Add"}</span>
+            </>
+          )}
+        </button>
 
-        {/* Selection Warning */}
-        {!isSelectionComplete() && (
-          <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] text-amber-400 bg-black/50 px-2 py-0.5 rounded-full whitespace-nowrap">
-            Select Cushion, Fabric & Legs
-          </div>
-        )}
+        {/* Checkout */}
+        <button
+          onClick={handleCheckout}
+          className="flex-shrink-0 rounded-full bg-blue-600 hover:bg-blue-700 text-sm font-semibold px-4 h-10"
+        >
+          Checkout →
+        </button>
       </div>
+
+      {/* Incomplete banner */}
+      {!isSelectionComplete() && (
+        <div className="mt-2 px-3 py-1.5 bg-amber-900/50 border border-amber-700/50 rounded-full text-xs text-amber-200 text-center">
+          Select Cushion, Fabric & Legs
+        </div>
+      )}
     </div>
   );
 }
