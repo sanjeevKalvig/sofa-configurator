@@ -48,7 +48,6 @@ export default function MeasurementLabels({ scene, showMeasurements, setShowMeas
         const o = offset.width || { x: 0, y: 0, z: 0 }
         const g = gap.width ?? 15
         const offsetVec = new THREE.Vector3(o.x, o.y, o.z)
-        const dimension = "width";
 
         if (g > 0) {
           // Split into two arrows with gap
@@ -56,13 +55,13 @@ export default function MeasurementLabels({ scene, showMeasurements, setShowMeas
           const widthEndLeft = new THREE.Vector3(center.x - g / 2, center.y, center.z).add(offsetVec)
           const widthStartRight = new THREE.Vector3(center.x + g / 2, center.y, center.z).add(offsetVec)
           const widthEndRight = new THREE.Vector3(boxMax.x, center.y, center.z).add(offsetVec)
-          group.add(createArrow(widthStartLeft, widthEndLeft, 0x000000, 0.005, dimension,true,false))
-          group.add(createArrow(widthStartRight, widthEndRight, 0x000000, 0.005, dimension,false,true))
+          group.add(createArrow(widthStartLeft, widthEndLeft, 0x000000, 0.005,true,false,"meshStartLine"))
+          group.add(createArrow(widthStartRight, widthEndRight, 0x000000, 0.005,false,true,"meshEndLine"))
         } else {
           // Continuous line
           const start = new THREE.Vector3(boxMin.x, center.y, center.z).add(offsetVec)
           const end = new THREE.Vector3(boxMax.x, center.y, center.z).add(offsetVec)
-          group.add(createArrow(start, end, 0x000000, 0.005, dimension, true,true))
+          group.add(createArrow(start, end, 0x000000, 0.005, true,true,"wholeMeshLine"))
         }
       }
 
@@ -71,7 +70,6 @@ export default function MeasurementLabels({ scene, showMeasurements, setShowMeas
         const o = offset.height || { x: 0, y: 0, z: 0 }
         const g = gap.height ?? 15
         const offsetVec = new THREE.Vector3(o.x, o.y, o.z)
-        const dimension = "height";
 
 
         if (g > 0) {
@@ -79,12 +77,12 @@ export default function MeasurementLabels({ scene, showMeasurements, setShowMeas
           const heightEndBottom = new THREE.Vector3(center.x, center.y - g / 2, center.z).add(offsetVec)
           const heightStartTop = new THREE.Vector3(center.x, center.y + g / 2, center.z).add(offsetVec)
           const heightEndTop = new THREE.Vector3(center.x, boxMax.y, center.z).add(offsetVec)
-          group.add(createArrow(heightEndTop, heightStartTop, 0x000000, 0.005, dimension,true,false))
-          group.add(createArrow(heightEndBottom, heightStartBottom, 0x000000, 0.005, dimension,false,true))
+          group.add(createArrow(heightEndTop, heightStartTop, 0x000000, 0.005,true,false,"meshStartLine"))
+          group.add(createArrow(heightEndBottom, heightStartBottom, 0x000000, 0.005,false,true,"meshEndLine"))
         } else {
           const start = new THREE.Vector3(center.x, boxMin.y, center.z).add(offsetVec)
           const end = new THREE.Vector3(center.x, boxMax.y, center.z).add(offsetVec)
-          group.add(createArrow(start, end, 0x000000, 0.005, dimension, true,true))
+          group.add(createArrow(start, end, 0x000000, 0.005, true,true,"wholeMeshLine"))
         }
       }
 
@@ -93,7 +91,6 @@ export default function MeasurementLabels({ scene, showMeasurements, setShowMeas
         const o = offset.depth || { x: 0, y: 0, z: 0 }
         const g = gap.depth ?? 15
         const offsetVec = new THREE.Vector3(o.x, o.y, o.z)
-        const dimension = "depth";
 
 
         if (g > 0) {
@@ -101,12 +98,12 @@ export default function MeasurementLabels({ scene, showMeasurements, setShowMeas
           const depthEndFront = new THREE.Vector3(center.x, center.y, center.z - g / 2).add(offsetVec)
           const depthStartBack = new THREE.Vector3(center.x, center.y, center.z + g / 2).add(offsetVec)
           const depthEndBack = new THREE.Vector3(center.x, center.y, boxMax.z).add(offsetVec)
-          group.add(createArrow(depthStartFront, depthEndFront, 0x000000, 0.005, dimension, true,false))
-          group.add(createArrow(depthStartBack, depthEndBack, 0x000000, 0.005, dimension,false,true))
+          group.add(createArrow(depthStartFront, depthEndFront, 0x000000, 0.005, true,false,"meshStartLine"))
+          group.add(createArrow(depthStartBack, depthEndBack, 0x000000, 0.005,false,true,"meshEndLine"))
         } else {
           const start = new THREE.Vector3(center.x, center.y, boxMin.z).add(offsetVec)
           const end = new THREE.Vector3(center.x, center.y, boxMax.z).add(offsetVec)
-          group.add(createArrow(start, end, 0x000000, 0.005, dimension, true,true))
+          group.add(createArrow(start, end, 0x000000, 0.005, true,true,"wholeMeshLine"))
         }
       }
     })
@@ -210,82 +207,92 @@ export default function MeasurementLabels({ scene, showMeasurements, setShowMeas
   )
 }
 
-// function createArrow(start, end, color = 0xff0000, radius = 0.5) {
-//   const dir = new THREE.Vector3().subVectors(end, start)
-//   const length = dir.length()
-//   const mid = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5)
 
-//   const arrowDir = dir.clone().normalize()
-//   const shaftGeometry = new THREE.CylinderGeometry(radius, radius, length - 0.05, 4)
-//   const shaftMaterial = new THREE.MeshBasicMaterial({ color })
-//   const shaft = new THREE.Mesh(shaftGeometry, shaftMaterial)
-
-//   const arrowGroup = new THREE.Group()
-//   arrowGroup.add(shaft)
-
-//   const axis = new THREE.Vector3(0, -1, 0)
-//   shaft.quaternion.setFromUnitVectors(axis, arrowDir)
-//   shaft.position.copy(mid)
-
-//   return arrowGroup
-// }
-
-
-function createArrow(start, end, color = 0xff0000, radius = 0.5, dimension, isTick1Required,isTick2Required ) {
+function createArrow(start, end, color = 0xff0000, radius = 0.5, isTick1Required, isTick2Required,meshLineType) {
   const dir = new THREE.Vector3().subVectors(end, start);
   const length = dir.length();
-  const mid = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
-
   const arrowDir = dir.clone().normalize();
+  const mid = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
 
   // === MAIN SHAFT ===
   const shaftGeometry = new THREE.CylinderGeometry(radius, radius, length, 4);
+
+  if(meshLineType=="meshEndLine" ){ shaftGeometry.translate(0, length / 2, 0); }
+  else if( meshLineType=="meshStartLine"){ shaftGeometry.translate(0, -length / 2, 0); }
+
+
   const shaftMaterial = new THREE.MeshBasicMaterial({ color });
   const shaft = new THREE.Mesh(shaftGeometry, shaftMaterial);
 
-  // === END TICKS (short lines) ===
+  // Start collapsed from 0 → full length
+  shaft.scale.y = 0.0001;
+
+  if(meshLineType=="meshEndLine" ){ shaft.position.copy(start); }
+  else if(meshLineType=="meshStartLine" ){ shaft.position.copy(end); }
+  else if(meshLineType=="wholeMeshLine" ){ shaft.position.copy(mid); }
+
+
+
+  // Rotate so Y-axis aligns with arrow direction
+  shaft.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), arrowDir);
+
+
+  // === TICKS ===
   const tickLength = 0.04;
   const tickRadius = radius;
-
   const tickGeometry = new THREE.CylinderGeometry(tickRadius, tickRadius, tickLength, 4);
+
+  const up = new THREE.Vector3(1, 0, 0);
+  let perp = new THREE.Vector3().crossVectors(arrowDir, up).normalize();
+
+  const tickDir = perp.clone();
 
   const tick1 = new THREE.Mesh(tickGeometry, shaftMaterial);
   const tick2 = new THREE.Mesh(tickGeometry, shaftMaterial);
 
-
-  // Compute perpendicular direction
-  const up=new THREE.Vector3(1, 0, 0)
-
-  let perp = new THREE.Vector3().crossVectors(arrowDir, up);
-
-
-  perp.normalize();
-
-  // Tick endpoint
-  const startTickPos = start.clone().add(perp.clone().multiplyScalar(tickLength / 20));
-  const endTickPos = end.clone().add(perp.clone().multiplyScalar(tickLength / 20));
-
-  tick1.position.copy(startTickPos);
-  tick2.position.copy(endTickPos);
-
-
-  // Rotate ticks so they are perpendicular
-  const tickDir = perp.clone().normalize();
   tick1.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), tickDir);
   tick2.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), tickDir);
 
+  tick1.position.copy(start);
+  tick2.position.copy(end);
 
-  // Rotate main shaft
-  shaft.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), arrowDir);
-  shaft.position.copy(mid);
+  tick1.scale.set(0.0001, 0.0001, 0.0001);
+  tick2.scale.set(0.0001, 0.0001, 0.0001);
 
-  // Group all parts
+
+  // === GROUP ===
   const arrowGroup = new THREE.Group();
   arrowGroup.add(shaft);
-  if(isTick1Required) arrowGroup.add(tick1);
+  if (isTick1Required) arrowGroup.add(tick1);
   if (isTick2Required) arrowGroup.add(tick2);
 
 
+  // === ANIMATION ===
+  let t = 0;
+  const duration = 0.16;
 
+  function animate() {
+    if (t < 0.9) {
+      t += 0.016 / duration; // 0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1
+
+      const eased = t * (2 - t); // ease-out 0.19,0.36,0.51 ,0.64,0.75,0.84,0.91,0.96,0.98,0.99
+
+      // Shaft grows ONLY from start → end
+      shaft.scale.y = eased;
+
+      // Ticks appear after 70%
+      if (eased > 0.7) {
+        const tickScale = (eased - 0.7) / 0.3;
+
+        if (isTick1Required) tick1.scale.setScalar(tickScale);
+        if (isTick2Required) tick2.scale.setScalar(tickScale);
+      }
+
+      requestAnimationFrame(animate);
+    }
+  }
+
+  animate();
   return arrowGroup;
 }
+
