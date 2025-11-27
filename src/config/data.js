@@ -328,7 +328,7 @@ export const data = {
         // Example mesh: Right Armrest
         Armrest: {
           show:["height","depth"], // show
-          gap: { width: 0, height: 0, depth: 0 },
+          gap: { width: 0, height: 0.05, depth: 0.15 },
           offset: {
             width: { x:0, y: 0.1 , z: 0.45 },
             height: { x: -0.12, y:0, z: -0.4 },
@@ -344,7 +344,7 @@ export const data = {
         // Example mesh: Back Support (only width & height)
         Support: {
           show: ["width",],
-          gap: { width: 0},
+          gap: { width: 0.15},
           offset: {
             width: { x:0, y: 0, z: 0.6 },
           },
@@ -356,7 +356,7 @@ export const data = {
         },
         Seat001:{
           show: ["width",],
-          gap: { width: 0,},
+          gap: { width: 0.15,},
           offset: {
             width: { x:0, y: 0, z: 0.5 },
           },
@@ -373,7 +373,7 @@ export const data = {
             width: { x:0, y: -0.13, z: 0.16 },
           },
           extraOffsetLabel:{
-            // width: { x:0, y:0, z: 0 },
+            width: { x:0, y:0.03, z: 0.04 },
             // height: { x: 0, y:0, z: 0 },
             // depth: { x: 0, y: 0 , z:0 },
           }

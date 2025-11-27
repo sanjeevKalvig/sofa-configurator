@@ -44,7 +44,7 @@ export default function Scene({showMeasurements,setShowMeasurements}) {
             />
             <Environment files="/hdr/baked.hdr" background={false}/>
             {/* <Lights /> */}
-            <Model showMeasurements={showMeasurements} setShowMeasurements={setShowMeasurements}/>
+            <Model showMeasurements={showMeasurements} setShowMeasurements={setShowMeasurements} controlsRef={controlsRef}/>
             <AntiAliasing controlsRef={controlsRef}/>
         </Canvas>
     )

@@ -1,5 +1,3 @@
-// Making it perfect even model lod and texture lod are different
-
 /* Multilevel LOD + Multi-model loader + Texture-LOD + UI-driven material switching + Transform support (Using Camera distance from each mesh) */
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -11,6 +9,8 @@ import { getMaterialById } from "../config/getterMappedDatafunctions";
 import { getTexture } from "../utils/textureCache";
 import Effects from "./Effects";
 import MeasurementLabels from "./MeasurementLabels";
+import { useCameraEditor } from "../hooks/useCameraEditor";
+
 
 /**
  * Helper: create a MeshStandardMaterial from a material texture set
@@ -57,11 +57,11 @@ function buildMeshCategoryMap(config) {
     return map;
 }
 
-export const Model = ({showMeasurements,setShowMeasurements}) => {
+export const Model = ({showMeasurements,setShowMeasurements,controlsRef}) => {
     const camera = useThree((s) => s.camera);
     const rootRef = useRef();
-    const [dofEffectDistance, setDofEffectDistance] = useState(1000000)
-    const [dofFade, setDofFade] = useState(0); // 0 = off, 1 = full blur
+    const dofEffectDistanceRef = useRef(1000000);
+
 
 
     // build entries
@@ -152,12 +152,14 @@ export const Model = ({showMeasurements,setShowMeasurements}) => {
         if (!matEntry) return null;
         if (isDefaultTexture) {
             const allMaterialLodsArray = Object.values(matEntry.materialTexturePaths);
+            console.log("first time")
             return allMaterialLodsArray[allMaterialLodsArray.length - 1];
         }
         let newTextureLODIndex = matEntry.materialThresholds.length - 1;
         for (let i = 0; i < matEntry.materialThresholds.length; i++) {
             if (minDist < matEntry.materialThresholds[i]) {
                 newTextureLODIndex = i;
+                console.log("yes new texturelod index is :",newTextureLODIndex)
                 break;
             }
         }
@@ -197,28 +199,6 @@ export const Model = ({showMeasurements,setShowMeasurements}) => {
             applyCategoryMaterialToMesh({mesh},isDefaultTexture);
         });
     }
-
-    // Setting layers for model
-    useEffect(() => {
-        preparedModels.forEach((model) => {
-            if (model.type === "simple") {
-                if (!model.scene) return;
-                model.scene.traverse((child) => {
-                    if (child.isMesh) {
-                        child.layers.set(1);
-                    }
-                });
-            }
-            if (model.type === "lod") {
-                model.LODMaps.map((lod, index) => {
-                    Object.values(lod).forEach((mesh) => {
-                        if (index == 0) mesh.layers.set(2);
-                        else mesh.layers.set(3);
-                    })
-                })
-            }
-        })
-    }, [preparedModels])
 
     // ------------------------------------------------------------
     // INIT: add models to scene + apply transforms + apply default textures
@@ -271,9 +251,9 @@ export const Model = ({showMeasurements,setShowMeasurements}) => {
                     // apply texture with model.activeLOD; otherwise apply default lowest LOD
                     if (model.activeMeshName === mesh.name && model.activeLOD != null) {
                         const aname=model.LODMaps[model.activeLOD][mesh.name]
-                        applyCategoryMaterialToMesh({mesh:aname, dofEffectDistance});
+                        applyCategoryMaterialToMesh({mesh:aname, minDist:dofEffectDistanceRef.current});
                     } else {
-                        applyCategoryMaterialToMesh({mesh, dofEffectDistance});
+                        applyCategoryMaterialToMesh({mesh, minDist:dofEffectDistanceRef.current},true);
                     }
                 });
             });
@@ -311,10 +291,7 @@ export const Model = ({showMeasurements,setShowMeasurements}) => {
                 }
             });
 
-            setDofEffectDistance(minDist)
-            // Smooth DOF fade in/out
-            const target = minDist < 3 ? 1 : 0;
-            setDofFade((prev) => THREE.MathUtils.lerp(prev, target, 0.8));
+            dofEffectDistanceRef.current = minDist;
 
             if (!closestMeshName) return;
 
@@ -341,7 +318,7 @@ export const Model = ({showMeasurements,setShowMeasurements}) => {
                 // also reapply the category's texture at default LOD for the restored mesh
                 const cat = meshToCategory[model.activeMeshName];
                 if (cat && model.activeMeshName!=closestMeshName) {
-                    applyCategoryMaterialToMesh({mesh:lowMesh},true);
+                    applyCategoryMaterialToMesh({mesh:lowMesh,minDist},true);
                 }
             }
 
@@ -368,16 +345,12 @@ export const Model = ({showMeasurements,setShowMeasurements}) => {
         });
     });
 
+    // useCameraEditor(controlsRef)
+
     return (
         <>
             <group ref={rootRef} />;
             <MeasurementLabels scene={rootRef.current} showMeasurements={showMeasurements} setShowMeasurements={setShowMeasurements}/>
-            {dofEffectDistance < 0.7 && <Effects dofEffectDistance={dofEffectDistance} />}
-            {/* <Effects
-        dofEffectDistance={dofEffectDistance}
-        dofFade={dofFade}
-      /> */}
-
         </>
     )
 
