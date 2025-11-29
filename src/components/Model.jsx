@@ -1,16 +1,13 @@
 /* Multilevel LOD + Multi-model loader + Texture-LOD + UI-driven material switching + Transform support (Using Camera distance from each mesh) */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { data } from "../config/data";
 import { getModel } from "../utils/modelCache";
 import { getMaterialById } from "../config/getterMappedDatafunctions";
 import { getTexture } from "../utils/textureCache";
-import Effects from "./Effects";
 import MeasurementLabels from "./MeasurementLabels";
-import { useCameraEditor } from "../hooks/useCameraEditor";
-
 
 /**
  * Helper: create a MeshStandardMaterial from a material texture set
@@ -31,10 +28,9 @@ function makeMaterialFromTextureSet(texturePaths = {}) {
     if (metallic) matParams.metalnessMap = metallic;
     if (displacement) {
         matParams.displacementMap = displacement;
-        matParams.displacementScale = 0.02; // tweak as needed
+        matParams.displacementScale = 0.02;
     }
 
-    // sensible defaults
     matParams.roughness = matParams.roughness !== undefined ? undefined : 1.0;
     matParams.metalness = matParams.metalness !== undefined ? undefined : 0.0;
 
@@ -57,36 +53,48 @@ function buildMeshCategoryMap(config) {
     return map;
 }
 
-export const Model = ({showMeasurements,setShowMeasurements,controlsRef}) => {
-    const camera = useThree((s) => s.camera);
+export const Model = ({
+    showMeasurements,
+    setShowMeasurements,
+    controlsRef,
+    setShowCushionPicker,
+}) => {
+    const { camera, gl } = useThree();
     const rootRef = useRef();
     const dofEffectDistanceRef = useRef(1000000);
 
+    // Raycasting refs
+    const raycaster = useRef(new THREE.Raycaster());
+    const mouse = useRef(new THREE.Vector2());
 
-
-    // build entries
+    // Build entries
     const modelEntries = useMemo(() => Object.entries(data.models), []);
     const sofaConfig = data.models.Sofa;
 
     // Build meshName -> category map (for sofa)
-    const meshToCategory = useMemo(() => buildMeshCategoryMap(sofaConfig), [sofaConfig]);
+    const meshToCategory = useMemo(
+        () => buildMeshCategoryMap(sofaConfig),
+        [sofaConfig]
+    );
 
-    // Category active material (Option A): remember the last selected material id per category
+    // Category active material: remember the last selected material id per category
     const categoryActiveMaterial = useRef({});
+
     // Initialize from data: pick first material that lists that category
     useEffect(() => {
         const mats = sofaConfig.materialsLods || [];
-        // for every category defined in sofaMeshCategories, pick first found material id
         const categories = Object.keys(sofaConfig.sofaMeshCategories || {});
         categories.forEach((cat) => {
-            const found = mats.find((m) => (m.materialUsingCategories?.categoriesNames || []).includes(cat));
+            const found = mats.find((m) =>
+                (m.materialUsingCategories?.categoriesNames || []).includes(cat)
+            );
             if (found) {
                 categoryActiveMaterial.current[cat] = found.id;
 
-                // 🔥 Send initial selection to the UI
+                // Send initial selection to the UI
                 window.dispatchEvent(
                     new CustomEvent("material-change", {
-                        detail: { category: cat, materialId: found.id }
+                        detail: { category: cat, materialId: found.id },
                     })
                 );
             }
@@ -94,7 +102,7 @@ export const Model = ({showMeasurements,setShowMeasurements,controlsRef}) => {
     }, [sofaConfig]);
 
     // ------------------------------------------------------------
-    // PREPARE MODELS + LOD maps (same as before but we keep references)
+    // PREPARE MODELS + LOD maps
     // ------------------------------------------------------------
     const preparedModels = useMemo(() => {
         return modelEntries.map(([name, config]) => {
@@ -146,35 +154,43 @@ export const Model = ({showMeasurements,setShowMeasurements,controlsRef}) => {
     // ------------------------------------------------------------
     // APPLY TEXTURES: helper functions
     // ------------------------------------------------------------
-    // find a material entry by id and return the texturePaths object for a given textureLODKey (e.g. "LOD-1")
-    function getTexturePathsForMaterialId({materialId,minDist},isDefaultTexture=false ) {
+    function getTexturePathsForMaterialId(
+        { materialId, minDist },
+        isDefaultTexture = false
+    ) {
         const matEntry = getMaterialById(materialId);
         if (!matEntry) return null;
         if (isDefaultTexture) {
-            const allMaterialLodsArray = Object.values(matEntry.materialTexturePaths);
-            console.log("first time")
+            const allMaterialLodsArray = Object.values(
+                matEntry.materialTexturePaths
+            );
             return allMaterialLodsArray[allMaterialLodsArray.length - 1];
         }
         let newTextureLODIndex = matEntry.materialThresholds.length - 1;
         for (let i = 0; i < matEntry.materialThresholds.length; i++) {
             if (minDist < matEntry.materialThresholds[i]) {
                 newTextureLODIndex = i;
-                console.log("yes new texturelod index is :",newTextureLODIndex)
                 break;
             }
         }
-        return Object.values(matEntry.materialTexturePaths)[newTextureLODIndex] || null;
+        return (
+            Object.values(matEntry.materialTexturePaths)[newTextureLODIndex] ||
+            null
+        );
     }
 
-    // Apply a material (by materialId + lodKey) to a single mesh
-    function applyMaterialToMesh({mesh, materialId,minDist}, isDefaultTexture) {
-        const texPaths = getTexturePathsForMaterialId({materialId,minDist},isDefaultTexture);
-        console.log(texPaths)
+    function applyMaterialToMesh(
+        { mesh, materialId, minDist },
+        isDefaultTexture
+    ) {
+        const texPaths = getTexturePathsForMaterialId(
+            { materialId, minDist },
+            isDefaultTexture
+        );
         if (!texPaths) return;
 
         const newMat = makeMaterialFromTextureSet(texPaths);
 
-        // if mesh has multiple material slots, replace all with clones of newMat
         if (Array.isArray(mesh.material)) {
             mesh.material = mesh.material.map(() => newMat.clone());
         } else {
@@ -183,20 +199,18 @@ export const Model = ({showMeasurements,setShowMeasurements,controlsRef}) => {
         mesh.material.needsUpdate = true;
     }
 
-    // Apply current active material for a category to a mesh using lodKey
-    function applyCategoryMaterialToMesh({mesh,minDist},isDefaultTexture) {
+    function applyCategoryMaterialToMesh({ mesh, minDist }, isDefaultTexture) {
         const category = meshToCategory[mesh.name];
-        if (!category) return; // mesh not in our categories
+        if (!category) return;
         const materialId = categoryActiveMaterial.current[category];
         if (!materialId) return;
-        applyMaterialToMesh({mesh,materialId,minDist},isDefaultTexture);
+        applyMaterialToMesh({ mesh, materialId, minDist }, isDefaultTexture);
     }
 
-    // Apply default textures to all meshes in a lowest LOD map (used on init)
     function applyDefaultTexturesToLowestLODMap(lowestLODMap) {
-        let isDefaultTexture=true
+        let isDefaultTexture = true;
         Object.values(lowestLODMap).forEach((mesh) => {
-            applyCategoryMaterialToMesh({mesh},isDefaultTexture);
+            applyCategoryMaterialToMesh({ mesh }, isDefaultTexture);
         });
     }
 
@@ -236,32 +250,79 @@ export const Model = ({showMeasurements,setShowMeasurements,controlsRef}) => {
         const onMaterialChange = (e) => {
             const { category, materialId } = e.detail || {};
             if (!category || materialId == null) return;
-            // update active material for category (Option A)
+            // update active material for category
             categoryActiveMaterial.current[category] = String(materialId);
 
             // reapply textures for all prepared LOD models where meshes belong to this category
             preparedModels.forEach((model) => {
                 if (model.type !== "lod") return;
                 const lowestLODMap = model.LODMaps[model.LODMaps.length - 1];
-                // for every mesh in lowestLODMap belonging to category, set its current lod (active or default)
                 Object.values(lowestLODMap).forEach((mesh) => {
                     const cat = meshToCategory[mesh.name];
                     if (cat !== category) return;
-                    // if this mesh is currently active (i.e. model.activeMeshName === mesh.name),
-                    // apply texture with model.activeLOD; otherwise apply default lowest LOD
-                    if (model.activeMeshName === mesh.name && model.activeLOD != null) {
-                        const aname=model.LODMaps[model.activeLOD][mesh.name]
-                        applyCategoryMaterialToMesh({mesh:aname, minDist:dofEffectDistanceRef.current});
+                    if (
+                        model.activeMeshName === mesh.name &&
+                        model.activeLOD != null
+                    ) {
+                        const aname = model.LODMaps[model.activeLOD][mesh.name];
+                        applyCategoryMaterialToMesh({
+                            mesh: aname,
+                            minDist: dofEffectDistanceRef.current,
+                        });
                     } else {
-                        applyCategoryMaterialToMesh({mesh, minDist:dofEffectDistanceRef.current},true);
+                        applyCategoryMaterialToMesh(
+                            { mesh, minDist: dofEffectDistanceRef.current },
+                            true
+                        );
                     }
                 });
             });
         };
 
         window.addEventListener("material-change", onMaterialChange);
-        return () => window.removeEventListener("material-change", onMaterialChange);
+        return () =>
+            window.removeEventListener("material-change", onMaterialChange);
     }, [preparedModels, meshToCategory]);
+
+    // ------------------------------------------------------------
+    // RAYCASTING CLICK DETECTION FOR CUSHIONS
+    // ------------------------------------------------------------
+    useEffect(() => {
+        if (!gl?.domElement || !rootRef.current) return;
+
+        const handleCanvasClick = (event) => {
+            const rect = gl.domElement.getBoundingClientRect();
+            mouse.current.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.current.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+            raycaster.current.layers.enableAll();
+            raycaster.current.setFromCamera(mouse.current, camera);
+
+            const intersects = raycaster.current.intersectObjects(
+                rootRef.current.children,
+                true
+            );
+
+            if (intersects.length > 0) {
+                const clickedObject = intersects[0].object;
+                const category = meshToCategory[clickedObject.name];
+
+                if (category === "Cushion Type") {
+                    setShowCushionPicker(true);
+                } else {
+                    setShowCushionPicker(false);
+                }
+            } else {
+                setShowCushionPicker(false);
+            }
+        };
+
+        gl.domElement.addEventListener("click", handleCanvasClick);
+
+        return () => {
+            gl.domElement.removeEventListener("click", handleCanvasClick);
+        };
+    }, [camera, gl, meshToCategory, preparedModels, setShowCushionPicker]);
 
     // ------------------------------------------------------------
     // LOD SWITCHING (model LOD + texture LOD sync)
@@ -282,7 +343,9 @@ export const Model = ({showMeasurements,setShowMeasurements,controlsRef}) => {
 
             // find closest mesh (using precomputed bbox)
             Object.values(lowestLODMap).forEach((mesh) => {
-                const worldBox = mesh._bbox.clone().applyMatrix4(mesh.matrixWorld);
+                const worldBox = mesh._bbox
+                    .clone()
+                    .applyMatrix4(mesh.matrixWorld);
                 worldBox.clampPoint(camPos, tmp);
                 const dist = camPos.distanceTo(tmp);
                 if (dist < minDist) {
@@ -305,20 +368,24 @@ export const Model = ({showMeasurements,setShowMeasurements,controlsRef}) => {
             }
 
             // skip if nothing changed
-            if (model.activeMeshName === closestMeshName && model.activeLOD === newLODIndex) return;
+            if (
+                model.activeMeshName === closestMeshName &&
+                model.activeLOD === newLODIndex
+            )
+                return;
 
             // remove previous active mesh (if any) and restore its lowest LOD mesh
             if (model.activeMeshName != null && model.activeLOD != null) {
                 const prevMesh = LODMaps[model.activeLOD][model.activeMeshName];
-                if (prevMesh && prevMesh.parent === group) group.remove(prevMesh);
+                if (prevMesh && prevMesh.parent === group)
+                    group.remove(prevMesh);
 
                 const lowMesh = lowestLODMap[model.activeMeshName];
                 if (lowMesh && !lowMesh.parent) group.add(lowMesh);
 
-                // also reapply the category's texture at default LOD for the restored mesh
                 const cat = meshToCategory[model.activeMeshName];
-                if (cat && model.activeMeshName!=closestMeshName) {
-                    applyCategoryMaterialToMesh({mesh:lowMesh,minDist},true);
+                if (cat && model.activeMeshName !== closestMeshName) {
+                    applyCategoryMaterialToMesh({ mesh: lowMesh, minDist }, true);
                 }
             }
 
@@ -329,35 +396,29 @@ export const Model = ({showMeasurements,setShowMeasurements,controlsRef}) => {
             // add the new mesh (model LOD)
             const newMesh = LODMaps[newLODIndex][closestMeshName];
             if (newMesh) {
-                applyCategoryMaterialToMesh({mesh:newMesh, minDist});
+                applyCategoryMaterialToMesh({ mesh: newMesh, minDist });
                 group.add(newMesh);
             }
 
             model.activeMeshName = closestMeshName;
             model.activeLOD = newLODIndex;
-
-            console.log(
-                {
-                    "Active Model Lod:-": model.activeLOD,
-                    "Active Mesh name:-": model.activeMeshName
-                }
-            );
         });
     });
 
-    // useCameraEditor(controlsRef)
-
     return (
         <>
-            <group ref={rootRef} />;
-            <MeasurementLabels scene={rootRef.current} showMeasurements={showMeasurements} setShowMeasurements={setShowMeasurements}/>
+            <group ref={rootRef} />
+            <MeasurementLabels
+                scene={rootRef.current}
+                showMeasurements={showMeasurements}
+                setShowMeasurements={setShowMeasurements}
+            />
         </>
-    )
-
+    );
 };
 
 // ------------------------------------------------------------
-// TRANSFORMS (unchanged)
+// TRANSFORMS
 // ------------------------------------------------------------
 function applyTransforms(object, config) {
     if (!config) return;
