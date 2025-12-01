@@ -1,4 +1,4 @@
-import React, { useRef ,useState} from "react";
+import React, { useRef, useState } from "react";
 import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
 import {
@@ -11,10 +11,14 @@ import Lights from "./Lights";
 import { Model } from "./Model";
 import AntiAliasing from "./AntiAliasing";
 import CushionMaterialPicker from "./CushionMaterialPicker";
+import FabricMaterialPicker from "./FabricMaterialPicker";
+import LegMaterialPicker from "./LegMaterialPicker";
 
 export default function Scene({ showMeasurements, setShowMeasurements }) {
   const controlsRef = useRef();
   const [showCushionPicker, setShowCushionPicker] = useState(false);
+  const [showFabricPicker, setShowFabricPicker] = useState(false);
+  const [showLegPicker, setShowLegPicker] = useState(false);
 
   return (
     <>
@@ -55,17 +59,25 @@ export default function Scene({ showMeasurements, setShowMeasurements }) {
           setShowMeasurements={setShowMeasurements}
           controlsRef={controlsRef}
           setShowCushionPicker={setShowCushionPicker}
+          setShowFabricPicker={setShowFabricPicker}
+          setShowLegPicker={setShowLegPicker}
         />
         <AntiAliasing controlsRef={controlsRef} />
       </Canvas>
-       {/*  HTML Overlay - outside Canvas */}
+      {/*  HTML Overlay - outside Canvas */}
       <CushionMaterialPicker visible={showCushionPicker} />
+      <FabricMaterialPicker visible={showFabricPicker} />
+      <LegMaterialPicker visible={showLegPicker} />
 
       {/* Click outside to close */}
-      {showCushionPicker && (
+      {(showCushionPicker || showFabricPicker || showLegPicker) && (
         <div
           className="fixed inset-0 z-10"
-          onClick={() => setShowCushionPicker(false)}
+          onClick={() => {
+            setShowCushionPicker(false);
+            setShowFabricPicker(false);
+            setShowLegPicker(false);
+          }}
         />
       )}
     </>

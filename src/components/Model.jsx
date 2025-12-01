@@ -1,6 +1,6 @@
-/* Multilevel LOD + Multi-model loader + Texture-LOD + UI-driven material switching + Transform support (Using Camera distance from each mesh) */
+/* Multilevel LOD + Multi-model loader + Texture-LOD + UI-driven material switching + Transform support */
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { data } from "../config/data";
@@ -11,7 +11,6 @@ import MeasurementLabels from "./MeasurementLabels";
 
 /**
  * Helper: create a MeshStandardMaterial from a material texture set
- * texturePaths is an object with keys: baseColorPath, normalPath, roughnessPath, metallicPath, displacementPath
  */
 function makeMaterialFromTextureSet(texturePaths = {}) {
     const matParams = {};
@@ -40,8 +39,7 @@ function makeMaterialFromTextureSet(texturePaths = {}) {
 }
 
 /**
- * Determine category for a mesh name using config.sofaMeshCategories
- * returns category string or null
+ * Build meshName -> category map
  */
 function buildMeshCategoryMap(config) {
     const map = {};
@@ -53,34 +51,54 @@ function buildMeshCategoryMap(config) {
     return map;
 }
 
+/**
+ * Apply transforms to an object
+ */
+function applyTransforms(object, config) {
+    if (!config) return;
+    if (config.position) object.position.fromArray(config.position);
+    if (config.scale) object.scale.fromArray(config.scale);
+
+    if (config.rotation) {
+        const r = Array.isArray(config.rotation)
+            ? config.rotation
+            : config.rotation.split(",").map(Number);
+
+        object.rotation.set(
+            THREE.MathUtils.degToRad(r[0] || 0),
+            THREE.MathUtils.degToRad(r[1] || 0),
+            THREE.MathUtils.degToRad(r[2] || 0)
+        );
+    }
+}
+
+// ✅ NOW EXPORT MODEL
 export const Model = ({
     showMeasurements,
     setShowMeasurements,
     controlsRef,
     setShowCushionPicker,
+    setShowFabricPicker,
+    setShowLegPicker,
 }) => {
     const { camera, gl } = useThree();
     const rootRef = useRef();
     const dofEffectDistanceRef = useRef(1000000);
 
-    // Raycasting refs
     const raycaster = useRef(new THREE.Raycaster());
     const mouse = useRef(new THREE.Vector2());
+    const [hoveredMesh, setHoveredMesh] = useState(null);
 
-    // Build entries
     const modelEntries = useMemo(() => Object.entries(data.models), []);
     const sofaConfig = data.models.Sofa;
 
-    // Build meshName -> category map (for sofa)
     const meshToCategory = useMemo(
         () => buildMeshCategoryMap(sofaConfig),
         [sofaConfig]
     );
 
-    // Category active material: remember the last selected material id per category
     const categoryActiveMaterial = useRef({});
 
-    // Initialize from data: pick first material that lists that category
     useEffect(() => {
         const mats = sofaConfig.materialsLods || [];
         const categories = Object.keys(sofaConfig.sofaMeshCategories || {});
@@ -90,8 +108,6 @@ export const Model = ({
             );
             if (found) {
                 categoryActiveMaterial.current[cat] = found.id;
-
-                // Send initial selection to the UI
                 window.dispatchEvent(
                     new CustomEvent("material-change", {
                         detail: { category: cat, materialId: found.id },
@@ -101,9 +117,6 @@ export const Model = ({
         });
     }, [sofaConfig]);
 
-    // ------------------------------------------------------------
-    // PREPARE MODELS + LOD maps
-    // ------------------------------------------------------------
     const preparedModels = useMemo(() => {
         return modelEntries.map(([name, config]) => {
             if (config.lods) {
@@ -113,14 +126,12 @@ export const Model = ({
                     if (!scene) return map;
                     scene.traverse((n) => {
                         if (n.isMesh) {
-                            // clone geometry/material safely
                             const clone = n.clone(false);
                             clone.geometry = n.geometry.clone();
                             clone.material = Array.isArray(n.material)
                                 ? n.material.map((m) => m.clone())
                                 : n.material.clone();
 
-                            // compute bbox once
                             clone.geometry.computeBoundingBox();
                             clone._bbox = clone.geometry.boundingBox.clone();
 
@@ -141,7 +152,6 @@ export const Model = ({
                 };
             }
 
-            // simple model
             return {
                 type: "simple",
                 name,
@@ -151,9 +161,6 @@ export const Model = ({
         });
     }, [modelEntries]);
 
-    // ------------------------------------------------------------
-    // APPLY TEXTURES: helper functions
-    // ------------------------------------------------------------
     function getTexturePathsForMaterialId(
         { materialId, minDist },
         isDefaultTexture = false
@@ -214,9 +221,6 @@ export const Model = ({
         });
     }
 
-    // ------------------------------------------------------------
-    // INIT: add models to scene + apply transforms + apply default textures
-    // ------------------------------------------------------------
     useEffect(() => {
         if (!rootRef.current) return;
 
@@ -229,31 +233,23 @@ export const Model = ({
 
             if (model.type === "lod") {
                 const lowestLODMap = model.LODMaps[model.LODMaps.length - 1];
-                // add lowest lod meshes to group
                 Object.values(lowestLODMap).forEach((mesh) => {
                     model.group.add(mesh);
                 });
 
-                // apply transforms to group
                 applyTransforms(model.group, model.config);
-
-                // apply default textures for categories on lowest LOD
                 applyDefaultTexturesToLowestLODMap(lowestLODMap);
 
                 rootRef.current.add(model.group);
-
                 model.activeLOD = model.LODMaps.length - 1;
             }
         });
 
-        // Listen for material-change events from UI
         const onMaterialChange = (e) => {
             const { category, materialId } = e.detail || {};
             if (!category || materialId == null) return;
-            // update active material for category
             categoryActiveMaterial.current[category] = String(materialId);
 
-            // reapply textures for all prepared LOD models where meshes belong to this category
             preparedModels.forEach((model) => {
                 if (model.type !== "lod") return;
                 const lowestLODMap = model.LODMaps[model.LODMaps.length - 1];
@@ -284,9 +280,6 @@ export const Model = ({
             window.removeEventListener("material-change", onMaterialChange);
     }, [preparedModels, meshToCategory]);
 
-    // ------------------------------------------------------------
-    // RAYCASTING CLICK DETECTION FOR CUSHIONS
-    // ------------------------------------------------------------
     useEffect(() => {
         if (!gl?.domElement || !rootRef.current) return;
 
@@ -307,26 +300,82 @@ export const Model = ({
                 const clickedObject = intersects[0].object;
                 const category = meshToCategory[clickedObject.name];
 
+                setShowCushionPicker(false);
+                setShowFabricPicker(false);
+                setShowLegPicker(false);
+
                 if (category === "Cushion Type") {
                     setShowCushionPicker(true);
-                } else {
-                    setShowCushionPicker(false);
+                } else if (category === "Fabric Material") {
+                    setShowFabricPicker(true);
+                } else if (category === "Sofa Leg Type") {
+                    setShowLegPicker(true);
                 }
             } else {
                 setShowCushionPicker(false);
+                setShowFabricPicker(false);
+                setShowLegPicker(false);
             }
         };
 
         gl.domElement.addEventListener("click", handleCanvasClick);
+        return () =>
+            gl.domElement.removeEventListener("click", handleCanvasClick);
+    }, [
+        camera,
+        gl,
+        meshToCategory,
+        preparedModels,
+        setShowCushionPicker,
+        setShowFabricPicker,
+        setShowLegPicker,
+    ]);
+
+    useEffect(() => {
+        if (!gl?.domElement || !rootRef.current) return;
+
+        const handleMouseMove = (event) => {
+            const rect = gl.domElement.getBoundingClientRect();
+            mouse.current.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.current.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+            raycaster.current.layers.enableAll();
+            raycaster.current.setFromCamera(mouse.current, camera);
+
+            const intersects = raycaster.current.intersectObjects(
+                rootRef.current.children,
+                true
+            );
+
+            if (intersects.length > 0) {
+                const hoveredObject = intersects[0].object;
+                const category = meshToCategory[hoveredObject.name];
+
+                if (
+                    category === "Cushion Type" ||
+                    category === "Fabric Material" ||
+                    category === "Sofa Leg Type"
+                ) {
+                    gl.domElement.style.cursor = "pointer";
+                    setHoveredMesh(hoveredObject);
+                } else {
+                    gl.domElement.style.cursor = "default";
+                    setHoveredMesh(null);
+                }
+            } else {
+                gl.domElement.style.cursor = "default";
+                setHoveredMesh(null);
+            }
+        };
+
+        gl.domElement.addEventListener("mousemove", handleMouseMove);
 
         return () => {
-            gl.domElement.removeEventListener("click", handleCanvasClick);
+            gl.domElement.removeEventListener("mousemove", handleMouseMove);
+            gl.domElement.style.cursor = "default";
         };
-    }, [camera, gl, meshToCategory, preparedModels, setShowCushionPicker]);
+    }, [camera, gl, meshToCategory, preparedModels]);
 
-    // ------------------------------------------------------------
-    // LOD SWITCHING (model LOD + texture LOD sync)
-    // ------------------------------------------------------------
     useFrame(() => {
         preparedModels.forEach((model) => {
             if (model.type !== "lod") return;
@@ -341,7 +390,6 @@ export const Model = ({
             let minDist = Infinity;
             const tmp = new THREE.Vector3();
 
-            // find closest mesh (using precomputed bbox)
             Object.values(lowestLODMap).forEach((mesh) => {
                 const worldBox = mesh._bbox
                     .clone()
@@ -358,7 +406,6 @@ export const Model = ({
 
             if (!closestMeshName) return;
 
-            // choose lod index based on thresholds
             let newLODIndex = thresholds.length - 1;
             for (let i = 0; i < thresholds.length; i++) {
                 if (minDist < thresholds[i]) {
@@ -367,14 +414,12 @@ export const Model = ({
                 }
             }
 
-            // skip if nothing changed
             if (
                 model.activeMeshName === closestMeshName &&
                 model.activeLOD === newLODIndex
             )
                 return;
 
-            // remove previous active mesh (if any) and restore its lowest LOD mesh
             if (model.activeMeshName != null && model.activeLOD != null) {
                 const prevMesh = LODMaps[model.activeLOD][model.activeMeshName];
                 if (prevMesh && prevMesh.parent === group)
@@ -389,11 +434,9 @@ export const Model = ({
                 }
             }
 
-            // remove the low LOD of new focused mesh
             const lowMesh = lowestLODMap[closestMeshName];
             if (lowMesh && lowMesh.parent === group) group.remove(lowMesh);
 
-            // add the new mesh (model LOD)
             const newMesh = LODMaps[newLODIndex][closestMeshName];
             if (newMesh) {
                 applyCategoryMaterialToMesh({ mesh: newMesh, minDist });
@@ -402,6 +445,43 @@ export const Model = ({
 
             model.activeMeshName = closestMeshName;
             model.activeLOD = newLODIndex;
+        });
+
+        // Hover glow effect
+        preparedModels.forEach((model) => {
+            if (model.type !== "lod") return;
+
+            model.LODMaps.forEach((lodMap) => {
+                Object.values(lodMap).forEach((mesh) => {
+                    const category = meshToCategory[mesh.name];
+
+                    if (
+                        category === "Cushion Type" ||
+                        category === "Fabric Material" ||
+                        category === "Sofa Leg Type"
+                    ) {
+                        const materials = Array.isArray(mesh.material)
+                            ? mesh.material
+                            : [mesh.material];
+
+                        materials.forEach((mat) => {
+                            if (hoveredMesh && mesh === hoveredMesh) {
+                                if (category === "Cushion Type") {
+                                    mat.emissive = new THREE.Color(0xb98110);
+                                } else if (category === "Fabric Material") {
+                                    mat.emissive = new THREE.Color(0x3b82f6);
+                                } else if (category === "Sofa Leg Type") {
+                                    mat.emissive = new THREE.Color(0xf59e0b);
+                                }
+                                mat.emissiveIntensity = 0.4;
+                            } else {
+                                mat.emissive = new THREE.Color(0x000000);
+                                mat.emissiveIntensity = 0;
+                            }
+                        });
+                    }
+                });
+            });
         });
     });
 
@@ -416,24 +496,3 @@ export const Model = ({
         </>
     );
 };
-
-// ------------------------------------------------------------
-// TRANSFORMS
-// ------------------------------------------------------------
-function applyTransforms(object, config) {
-    if (!config) return;
-    if (config.position) object.position.fromArray(config.position);
-    if (config.scale) object.scale.fromArray(config.scale);
-
-    if (config.rotation) {
-        const r = Array.isArray(config.rotation)
-            ? config.rotation
-            : config.rotation.split(",").map(Number);
-
-        object.rotation.set(
-            THREE.MathUtils.degToRad(r[0] || 0),
-            THREE.MathUtils.degToRad(r[1] || 0),
-            THREE.MathUtils.degToRad(r[2] || 0)
-        );
-    }
-}
