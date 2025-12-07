@@ -8,6 +8,7 @@ import { getModel } from "../utils/modelCache";
 import { getMaterialById } from "../config/getterMappedDatafunctions";
 import { getTexture } from "../utils/textureCache";
 import MeasurementLabels from "./MeasurementLabels";
+import Effects from "./Effects";
 
 /**
  * Helper: create a MeshStandardMaterial from a material texture set
@@ -83,7 +84,8 @@ export const Model = ({
 }) => {
     const { camera, gl } = useThree();
     const rootRef = useRef();
-    const dofEffectDistanceRef = useRef(1000000);
+    const currentCameraDistance = useRef(1000000);
+    const [dof,setdof]=useState(1000000)
     const isDragging = useRef(false);
     const downPos = useRef({ x: 0, y: 0 });
 
@@ -265,11 +267,11 @@ export const Model = ({
                         const aname = model.LODMaps[model.activeLOD][mesh.name];
                         applyCategoryMaterialToMesh({
                             mesh: aname,
-                            minDist: dofEffectDistanceRef.current,
+                            minDist: currentCameraDistance.current,
                         });
                     } else {
                         applyCategoryMaterialToMesh(
-                            { mesh, minDist: dofEffectDistanceRef.current },
+                            { mesh, minDist: currentCameraDistance.current },
                             true
                         );
                     }
@@ -308,7 +310,8 @@ export const Model = ({
                 }
             });
 
-            dofEffectDistanceRef.current = minDist;
+            currentCameraDistance.current = minDist;
+            setdof(minDist)
 
             if (!closestMeshName) return;
 
@@ -492,6 +495,7 @@ export const Model = ({
                 showMeasurements={showMeasurements}
                 setShowMeasurements={setShowMeasurements}
             />
+              {/* {dof<0.7 && <Effects dofEffectDistance={dof}/>} */}
         </>
     );
 };
