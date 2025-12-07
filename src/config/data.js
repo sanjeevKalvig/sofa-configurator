@@ -13,9 +13,12 @@ export const data = {
       // position:[3,3,3],
       // rotation:[0,-90,0],
       sofaMeshCategories:{
-        ["Fabric Material"]:["Support","Backrsupport001","Seat001","Seat","Backrest001","Armrest","Backrest","Armrest001","Backrsupport","Towel"],
+        ["Fabric Material"]:["Support","Backrsupport001","Seat001","Seat","Backrest001","Armrest","Backrest","Armrest001","Backrsupport"],
         ["Sofa Leg Type"]:["leg001","leg004","leg003","leg","leg002","leg005"],
-        ["Cushion Type"]:["Pillow","Pillow002","Pillow001"]
+        ["Cushion Type"]:["Pillow"],
+        ["Cushion Type2"]:["Pillow002"],
+        ["Cushion Type3"]:["Pillow001"],
+        ["Towel Material"]:["Towel"]
       },
       materialsLods: [
         {
@@ -306,13 +309,304 @@ export const data = {
           } ,
           materialThresholds:[0.7,1.2,1.5]
         },
+
+        {
+          id: "9",
+          materialName: "Comfort Foam",
+          materialTexturePaths: {
+            "LOD-0": {
+              baseColorPath: "/textures/Comfort Foam/LOD-0/Base_Color.png",
+              // normalPath: "/textures/Comfort Foam/LOD-0/Normal.png",
+              // roughnessPath: "/textures/Comfort Foam/LOD-0/Roughness.png",
+              // metallicPath: "/textures/Comfort Foam/LOD-0/Metallic.png",
+              // displacementPath:"/textures/Comfort Foam/LOD-0/Displacement.png",
+            },
+            "LOD-1": {
+              baseColorPath: "/textures/Comfort Foam/LOD-1/Base_Color.png",
+              // normalPath: "/textures/Comfort Foam/LOD-1/Normal.png",
+              // roughnessPath: "/textures/Comfort Foam/LOD-1/Roughness.png",
+              // metallicPath: "/textures/Comfort Foam/LOD-1/Metallic.png",
+              // displacementPath:"/textures/Comfort Foam/LOD-1/Displacement.png",
+            },
+            "LOD-2": {
+              baseColorPath: "/textures/Comfort Foam/LOD-2/Base_Color.png",
+              // normalPath: "/textures/Comfort Foam/LOD-2/Normal.png",
+              // roughnessPath: "/textures/Comfort Foam/LOD-2/Roughness.png",
+              // metallicPath: "/textures/Comfort Foam/LOD-2/Metallic.png",
+              // displacementPath:"/textures/Comfort Foam/LOD-2/Displacement.png",
+            },
+          },
+          materialUsingCategories:{
+            categoriesNames:["Cushion Type2"],
+            materialImagePath: "/images/Green.png",
+          } ,
+          materialThresholds:[0.7,1.2,1.5]
+        },
+        {
+          id: "10",
+          materialName: "Feather Touch",
+          materialTexturePaths: {
+            "LOD-0": {
+              baseColorPath: "/textures/Feather Touch/LOD-0/Base_Color.png",
+              // normalPath: "/textures/Feather Touch/LOD-0/Normal.png",
+              // roughnessPath: "/textures/Feather Touch/LOD-0/Roughness.png",
+              // metallicPath: "/textures/Feather Touch/LOD-0/Metallic.png",
+              // displacementPath:"/textures/Feather Touch/LOD-0/Displacement.png",
+            },
+            "LOD-1": {
+              baseColorPath: "/textures/Feather Touch/LOD-1/Base_Color.png",
+              // normalPath: "/textures/Feather Touch/LOD-1/Normal.png",
+              // roughnessPath: "/textures/Feather Touch/LOD-1/Roughness.png",
+              // metallicPath: "/textures/Feather Touch/LOD-1/Metallic.png",
+              // displacementPath:"/textures/Feather Touch/LOD-1/Displacement.png",
+            },
+            "LOD-2": {
+              baseColorPath: "/textures/Feather Touch/LOD-2/Base_Color.png",
+              // normalPath: "/textures/Feather Touch/LOD-2/Normal.png",
+              // roughnessPath: "/textures/Feather Touch/LOD-2/Roughness.png",
+              // metallicPath: "/textures/Feather Touch/LOD-2/Metallic.png",
+              // displacementPath:"/textures/Feather Touch/LOD-2/Displacement.png",
+            },
+          },
+          materialUsingCategories:{
+            categoriesNames:["Cushion Type2"],
+            materialImagePath: "/images/LightPink.jpg",
+          } ,
+          materialThresholds:[0.7,1.2,1.5]
+        },
+        {
+          id: "11",
+          materialName: "Memory Cloud",
+          materialTexturePaths: {
+            "LOD-0": {
+              baseColorPath: "/textures/Memory Cloud/LOD-0/Base_Color.png",
+              // normalPath: "/textures/Memory Cloud/LOD-0/Normal.png",
+              // roughnessPath: "/textures/Memory Cloud/LOD-0/Roughness.png",
+              // metallicPath: "/textures/Memory Cloud/LOD-0/Metallic.png",
+              // displacementPath:"/textures/Memory Cloud/LOD-0/Displacement.png",
+            },
+            "LOD-1": {
+              baseColorPath: "/textures/Memory Cloud/LOD-1/Base_Color.png",
+              // normalPath: "/textures/Memory Cloud/LOD-1/Normal.png",
+              // roughnessPath: "/textures/Memory Cloud/LOD-1/Roughness.png",
+              // metallicPath: "/textures/Memory Cloud/LOD-1/Metallic.png",
+              // displacementPath:"/textures/Memory Cloud/LOD-1/Displacement.png",
+            },
+            "LOD-2": {
+              baseColorPath: "/textures/Memory Cloud/LOD-2/Base_Color.png",
+              // normalPath: "/textures/Memory Cloud/LOD-2/Normal.png",
+              // roughnessPath: "/textures/Memory Cloud/LOD-2/Roughness.png",
+              // metallicPath: "/textures/Memory Cloud/LOD-2/Metallic.png",
+              // displacementPath:"/textures/Memory Cloud/LOD-2/Displacement.png",
+            },
+          },
+          materialUsingCategories:{
+            categoriesNames:["Cushion Type2"],
+            materialImagePath: "/images/Black.jfif",
+          } ,
+          materialThresholds:[0.7,1.2,1.5]
+        },
+
+        {
+          id: "12",
+          materialName: "Comfort Foam",
+          materialTexturePaths: {
+            "LOD-0": {
+              baseColorPath: "/textures/Comfort Foam/LOD-0/Base_Color.png",
+              // normalPath: "/textures/Comfort Foam/LOD-0/Normal.png",
+              // roughnessPath: "/textures/Comfort Foam/LOD-0/Roughness.png",
+              // metallicPath: "/textures/Comfort Foam/LOD-0/Metallic.png",
+              // displacementPath:"/textures/Comfort Foam/LOD-0/Displacement.png",
+            },
+            "LOD-1": {
+              baseColorPath: "/textures/Comfort Foam/LOD-1/Base_Color.png",
+              // normalPath: "/textures/Comfort Foam/LOD-1/Normal.png",
+              // roughnessPath: "/textures/Comfort Foam/LOD-1/Roughness.png",
+              // metallicPath: "/textures/Comfort Foam/LOD-1/Metallic.png",
+              // displacementPath:"/textures/Comfort Foam/LOD-1/Displacement.png",
+            },
+            "LOD-2": {
+              baseColorPath: "/textures/Comfort Foam/LOD-2/Base_Color.png",
+              // normalPath: "/textures/Comfort Foam/LOD-2/Normal.png",
+              // roughnessPath: "/textures/Comfort Foam/LOD-2/Roughness.png",
+              // metallicPath: "/textures/Comfort Foam/LOD-2/Metallic.png",
+              // displacementPath:"/textures/Comfort Foam/LOD-2/Displacement.png",
+            },
+          },
+          materialUsingCategories:{
+            categoriesNames:["Cushion Type3"],
+            materialImagePath: "/images/Brown.jpg",
+          } ,
+          materialThresholds:[0.7,1.2,1.5]
+        },
+        {
+          id: "13",
+          materialName: "Feather Touch",
+          materialTexturePaths: {
+            "LOD-0": {
+              baseColorPath: "/textures/Feather Touch/LOD-0/Base_Color.png",
+              // normalPath: "/textures/Feather Touch/LOD-0/Normal.png",
+              // roughnessPath: "/textures/Feather Touch/LOD-0/Roughness.png",
+              // metallicPath: "/textures/Feather Touch/LOD-0/Metallic.png",
+              // displacementPath:"/textures/Feather Touch/LOD-0/Displacement.png",
+            },
+            "LOD-1": {
+              baseColorPath: "/textures/Feather Touch/LOD-1/Base_Color.png",
+              // normalPath: "/textures/Feather Touch/LOD-1/Normal.png",
+              // roughnessPath: "/textures/Feather Touch/LOD-1/Roughness.png",
+              // metallicPath: "/textures/Feather Touch/LOD-1/Metallic.png",
+              // displacementPath:"/textures/Feather Touch/LOD-1/Displacement.png",
+            },
+            "LOD-2": {
+              baseColorPath: "/textures/Feather Touch/LOD-2/Base_Color.png",
+              // normalPath: "/textures/Feather Touch/LOD-2/Normal.png",
+              // roughnessPath: "/textures/Feather Touch/LOD-2/Roughness.png",
+              // metallicPath: "/textures/Feather Touch/LOD-2/Metallic.png",
+              // displacementPath:"/textures/Feather Touch/LOD-2/Displacement.png",
+            },
+          },
+          materialUsingCategories:{
+            categoriesNames:["Cushion Type3"],
+            materialImagePath: "/images/Red.jpg",
+          } ,
+          materialThresholds:[0.7,1.2,1.5]
+        },
+        {
+          id: "14",
+          materialName: "Memory Cloud",
+          materialTexturePaths: {
+            "LOD-0": {
+              baseColorPath: "/textures/Memory Cloud/LOD-0/Base_Color.png",
+              // normalPath: "/textures/Memory Cloud/LOD-0/Normal.png",
+              // roughnessPath: "/textures/Memory Cloud/LOD-0/Roughness.png",
+              // metallicPath: "/textures/Memory Cloud/LOD-0/Metallic.png",
+              // displacementPath:"/textures/Memory Cloud/LOD-0/Displacement.png",
+            },
+            "LOD-1": {
+              baseColorPath: "/textures/Memory Cloud/LOD-1/Base_Color.png",
+              // normalPath: "/textures/Memory Cloud/LOD-1/Normal.png",
+              // roughnessPath: "/textures/Memory Cloud/LOD-1/Roughness.png",
+              // metallicPath: "/textures/Memory Cloud/LOD-1/Metallic.png",
+              // displacementPath:"/textures/Memory Cloud/LOD-1/Displacement.png",
+            },
+            "LOD-2": {
+              baseColorPath: "/textures/Memory Cloud/LOD-2/Base_Color.png",
+              // normalPath: "/textures/Memory Cloud/LOD-2/Normal.png",
+              // roughnessPath: "/textures/Memory Cloud/LOD-2/Roughness.png",
+              // metallicPath: "/textures/Memory Cloud/LOD-2/Metallic.png",
+              // displacementPath:"/textures/Memory Cloud/LOD-2/Displacement.png",
+            },
+          },
+          materialUsingCategories:{
+            categoriesNames:["Cushion Type3"],
+            materialImagePath: "/images/Black.jfif",
+          } ,
+          materialThresholds:[0.7,1.2,1.5]
+        },
+
+        {
+          id: "15",
+          materialName: "Comfort Foam",
+          materialTexturePaths: {
+            "LOD-0": {
+              baseColorPath: "/textures/Comfort Foam/LOD-0/Base_Color.png",
+              // normalPath: "/textures/Comfort Foam/LOD-0/Normal.png",
+              // roughnessPath: "/textures/Comfort Foam/LOD-0/Roughness.png",
+              // metallicPath: "/textures/Comfort Foam/LOD-0/Metallic.png",
+              // displacementPath:"/textures/Comfort Foam/LOD-0/Displacement.png",
+            },
+            "LOD-1": {
+              baseColorPath: "/textures/Comfort Foam/LOD-1/Base_Color.png",
+              // normalPath: "/textures/Comfort Foam/LOD-1/Normal.png",
+              // roughnessPath: "/textures/Comfort Foam/LOD-1/Roughness.png",
+              // metallicPath: "/textures/Comfort Foam/LOD-1/Metallic.png",
+              // displacementPath:"/textures/Comfort Foam/LOD-1/Displacement.png",
+            },
+            "LOD-2": {
+              baseColorPath: "/textures/Comfort Foam/LOD-2/Base_Color.png",
+              // normalPath: "/textures/Comfort Foam/LOD-2/Normal.png",
+              // roughnessPath: "/textures/Comfort Foam/LOD-2/Roughness.png",
+              // metallicPath: "/textures/Comfort Foam/LOD-2/Metallic.png",
+              // displacementPath:"/textures/Comfort Foam/LOD-2/Displacement.png",
+            },
+          },
+          materialUsingCategories:{
+            categoriesNames:["Towel Material"],
+            materialImagePath: "/images/Red.jpg",
+          } ,
+          materialThresholds:[0.7,1.2,1.5]
+        },
+        {
+          id: "16",
+          materialName: "Feather Touch",
+          materialTexturePaths: {
+            "LOD-0": {
+              baseColorPath: "/textures/Feather Touch/LOD-0/Base_Color.png",
+              // normalPath: "/textures/Feather Touch/LOD-0/Normal.png",
+              // roughnessPath: "/textures/Feather Touch/LOD-0/Roughness.png",
+              // metallicPath: "/textures/Feather Touch/LOD-0/Metallic.png",
+              // displacementPath:"/textures/Feather Touch/LOD-0/Displacement.png",
+            },
+            "LOD-1": {
+              baseColorPath: "/textures/Feather Touch/LOD-1/Base_Color.png",
+              // normalPath: "/textures/Feather Touch/LOD-1/Normal.png",
+              // roughnessPath: "/textures/Feather Touch/LOD-1/Roughness.png",
+              // metallicPath: "/textures/Feather Touch/LOD-1/Metallic.png",
+              // displacementPath:"/textures/Feather Touch/LOD-1/Displacement.png",
+            },
+            "LOD-2": {
+              baseColorPath: "/textures/Feather Touch/LOD-2/Base_Color.png",
+              // normalPath: "/textures/Feather Touch/LOD-2/Normal.png",
+              // roughnessPath: "/textures/Feather Touch/LOD-2/Roughness.png",
+              // metallicPath: "/textures/Feather Touch/LOD-2/Metallic.png",
+              // displacementPath:"/textures/Feather Touch/LOD-2/Displacement.png",
+            },
+          },
+          materialUsingCategories:{
+            categoriesNames:["Towel Material"],
+            materialImagePath: "/images/Black.jfif",
+          } ,
+          materialThresholds:[0.7,1.2,1.5]
+        },
+        {
+          id: "17",
+          materialName: "Memory Cloud",
+          materialTexturePaths: {
+            "LOD-0": {
+              baseColorPath: "/textures/Memory Cloud/LOD-0/Base_Color.png",
+              // normalPath: "/textures/Memory Cloud/LOD-0/Normal.png",
+              // roughnessPath: "/textures/Memory Cloud/LOD-0/Roughness.png",
+              // metallicPath: "/textures/Memory Cloud/LOD-0/Metallic.png",
+              // displacementPath:"/textures/Memory Cloud/LOD-0/Displacement.png",
+            },
+            "LOD-1": {
+              baseColorPath: "/textures/Memory Cloud/LOD-1/Base_Color.png",
+              // normalPath: "/textures/Memory Cloud/LOD-1/Normal.png",
+              // roughnessPath: "/textures/Memory Cloud/LOD-1/Roughness.png",
+              // metallicPath: "/textures/Memory Cloud/LOD-1/Metallic.png",
+              // displacementPath:"/textures/Memory Cloud/LOD-1/Displacement.png",
+            },
+            "LOD-2": {
+              baseColorPath: "/textures/Memory Cloud/LOD-2/Base_Color.png",
+              // normalPath: "/textures/Memory Cloud/LOD-2/Normal.png",
+              // roughnessPath: "/textures/Memory Cloud/LOD-2/Roughness.png",
+              // metallicPath: "/textures/Memory Cloud/LOD-2/Metallic.png",
+              // displacementPath:"/textures/Memory Cloud/LOD-2/Displacement.png",
+            },
+          },
+          materialUsingCategories:{
+            categoriesNames:["Towel Material"],
+            materialImagePath: "/images/Brown.jpg",
+          } ,
+          materialThresholds:[0.7,1.2,1.5]
+        },
       ],
     },
     Floor: {
       nickName: "FloorModel",
-      modelPath: "/models/Floor.glb",
+      modelPath: "/models/Floor2.glb",
       // position: [-7,-1.5,7],
-      // scale: [3,3,3],
+      scale: [1.67,1.67,1.67],
     },
   },
   

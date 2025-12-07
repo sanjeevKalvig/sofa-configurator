@@ -76,18 +76,20 @@ function applyTransforms(object, config) {
 export const Model = ({
     showMeasurements,
     setShowMeasurements,
-    controlsRef,
-    setShowCushionPicker,
-    setShowFabricPicker,
-    setShowLegPicker,
+    setClickedMeshCategory,
+    setHoveredMesh,
+    hoveredMesh,
+    clickedMeshCategoryRef
 }) => {
     const { camera, gl } = useThree();
     const rootRef = useRef();
     const dofEffectDistanceRef = useRef(1000000);
+    const isDragging = useRef(false);
+    const downPos = useRef({ x: 0, y: 0 });
+
 
     const raycaster = useRef(new THREE.Raycaster());
     const mouse = useRef(new THREE.Vector2());
-    const [hoveredMesh, setHoveredMesh] = useState(null);
 
     const modelEntries = useMemo(() => Object.entries(data.models), []);
     const sofaConfig = data.models.Sofa;
@@ -280,102 +282,6 @@ export const Model = ({
             window.removeEventListener("material-change", onMaterialChange);
     }, [preparedModels, meshToCategory]);
 
-    useEffect(() => {
-        if (!gl?.domElement || !rootRef.current) return;
-
-        const handleCanvasClick = (event) => {
-            const rect = gl.domElement.getBoundingClientRect();
-            mouse.current.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-            mouse.current.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-            raycaster.current.layers.enableAll();
-            raycaster.current.setFromCamera(mouse.current, camera);
-
-            const intersects = raycaster.current.intersectObjects(
-                rootRef.current.children,
-                true
-            );
-
-            if (intersects.length > 0) {
-                const clickedObject = intersects[0].object;
-                const category = meshToCategory[clickedObject.name];
-
-                setShowCushionPicker(false);
-                setShowFabricPicker(false);
-                setShowLegPicker(false);
-
-                if (category === "Cushion Type") {
-                    setShowCushionPicker(true);
-                } else if (category === "Fabric Material") {
-                    setShowFabricPicker(true);
-                } else if (category === "Sofa Leg Type") {
-                    setShowLegPicker(true);
-                }
-            } else {
-                setShowCushionPicker(false);
-                setShowFabricPicker(false);
-                setShowLegPicker(false);
-            }
-        };
-
-        gl.domElement.addEventListener("click", handleCanvasClick);
-        return () =>
-            gl.domElement.removeEventListener("click", handleCanvasClick);
-    }, [
-        camera,
-        gl,
-        meshToCategory,
-        preparedModels,
-        setShowCushionPicker,
-        setShowFabricPicker,
-        setShowLegPicker,
-    ]);
-
-    useEffect(() => {
-        if (!gl?.domElement || !rootRef.current) return;
-
-        const handleMouseMove = (event) => {
-            const rect = gl.domElement.getBoundingClientRect();
-            mouse.current.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-            mouse.current.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-            raycaster.current.layers.enableAll();
-            raycaster.current.setFromCamera(mouse.current, camera);
-
-            const intersects = raycaster.current.intersectObjects(
-                rootRef.current.children,
-                true
-            );
-
-            if (intersects.length > 0) {
-                const hoveredObject = intersects[0].object;
-                const category = meshToCategory[hoveredObject.name];
-
-                if (
-                    category === "Cushion Type" ||
-                    category === "Fabric Material" ||
-                    category === "Sofa Leg Type"
-                ) {
-                    gl.domElement.style.cursor = "pointer";
-                    setHoveredMesh(hoveredObject);
-                } else {
-                    gl.domElement.style.cursor = "default";
-                    setHoveredMesh(null);
-                }
-            } else {
-                gl.domElement.style.cursor = "default";
-                setHoveredMesh(null);
-            }
-        };
-
-        gl.domElement.addEventListener("mousemove", handleMouseMove);
-
-        return () => {
-            gl.domElement.removeEventListener("mousemove", handleMouseMove);
-            gl.domElement.style.cursor = "default";
-        };
-    }, [camera, gl, meshToCategory, preparedModels]);
-
     useFrame(() => {
         preparedModels.forEach((model) => {
             if (model.type !== "lod") return;
@@ -447,47 +353,140 @@ export const Model = ({
             model.activeLOD = newLODIndex;
         });
 
+
         // Hover glow effect
-        preparedModels.forEach((model) => {
-            if (model.type !== "lod") return;
+        // preparedModels.forEach((model) => {
+        //     if (model.type !== "lod") return;
 
-            model.LODMaps.forEach((lodMap) => {
-                Object.values(lodMap).forEach((mesh) => {
-                    const category = meshToCategory[mesh.name];
+        //     model.LODMaps.forEach((lodMap) => {
+        //         Object.values(lodMap).forEach((mesh) => {
+        //             const category = meshToCategory[mesh.name];
 
-                    if (
-                        category === "Cushion Type" ||
-                        category === "Fabric Material" ||
-                        category === "Sofa Leg Type"
-                    ) {
-                        const materials = Array.isArray(mesh.material)
-                            ? mesh.material
-                            : [mesh.material];
+        //             if (
+        //                 category === "Cushion Type" ||
+        //                 category === "Cushion Type2" ||
+        //                 category === "Cushion Type3" ||
+        //                 category === "Fabric Material" ||
+        //                 category === "Sofa Leg Type" ||
+        //                 category === "Towel Material"
+        //             ) {
+        //                 const materials = Array.isArray(mesh.material)
+        //                     ? mesh.material
+        //                     : [mesh.material];
 
-                        materials.forEach((mat) => {
-                            if (hoveredMesh && mesh === hoveredMesh) {
-                                if (category === "Cushion Type") {
-                                    mat.emissive = new THREE.Color(0xb98110);
-                                } else if (category === "Fabric Material") {
-                                    mat.emissive = new THREE.Color(0x3b82f6);
-                                } else if (category === "Sofa Leg Type") {
-                                    mat.emissive = new THREE.Color(0xf59e0b);
-                                }
-                                mat.emissiveIntensity = 0.4;
-                            } else {
-                                mat.emissive = new THREE.Color(0x000000);
-                                mat.emissiveIntensity = 0;
-                            }
-                        });
-                    }
-                });
-            });
-        });
+        //                 materials.forEach((mat) => {
+        //                     if (hoveredMesh && mesh === hoveredMesh) {
+        //                         if (category === "Cushion Type" || category === "Cushion Type2" || category === "Cushion Type3") {
+        //                             mat.emissive = new THREE.Color(0xb98110);
+        //                         } else if (category === "Fabric Material" || category === "Towel Material") {
+        //                             mat.emissive = new THREE.Color(0x3b82f6);
+        //                         } else if (category === "Sofa Leg Type") {
+        //                             mat.emissive = new THREE.Color(0xf59e0b);
+        //                         }
+        //                         mat.emissiveIntensity = 0.4;
+        //                     } else {
+        //                         mat.emissive = new THREE.Color(0x000000);
+        //                         mat.emissiveIntensity = 0;
+        //                     }
+        //                 });
+        //             }
+        //         });
+        //     });
+        // });
     });
+
+    const handlePointerDown = (e) => {
+        // console.log("pointer down")
+        isDragging.current = false;
+        downPos.current = { x: e.clientX, y: e.clientY };
+    };
+
+    const handlePointerMove = (e) => {
+        // console.log("pointer move")
+        const dx = Math.abs(e.clientX - downPos.current.x);
+        const dy = Math.abs(e.clientY - downPos.current.y);
+
+        if (dx > 4 || dy > 4) {
+            isDragging.current = true;
+        }
+    };
+
+    const handlePointerUp = (e) => {
+        // console.log("pointer up")
+        if (isDragging.current) return;  // ⛔ Ignore end-of-drag clicks
+
+        // Continue your raycast logic
+        const { camera } = e;
+        const mouse = new THREE.Vector2();
+
+        mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+        raycaster.current.setFromCamera(mouse, camera);
+
+        const intersects = raycaster.current.intersectObjects(
+            rootRef.current.children,
+            true
+        );
+
+        if (intersects.length > 0) {
+            const clickedObject = intersects[0].object;
+            const category = meshToCategory[clickedObject.name];
+            if (category) {
+                setClickedMeshCategory(category);
+                clickedMeshCategoryRef.current = category;
+            }
+            else {
+                setClickedMeshCategory("");
+                clickedMeshCategoryRef.current = "";
+            }
+        } else {
+            setClickedMeshCategory("");
+            clickedMeshCategoryRef.current = "";
+        }
+    };
+
+    const handlePointerOver = (e) => {
+        // console.log("pointer over")
+        e.stopPropagation();
+        const object = e.object;
+
+        const category = meshToCategory[object.name];
+
+        if (
+            category === "Cushion Type" ||
+            category === "Cushion Type2" ||
+            category === "Cushion Type3" ||
+            category === "Fabric Material" ||
+            category === "Sofa Leg Type" ||
+            category === "Towel Material"
+        ) {
+            gl.domElement.style.cursor = "pointer";
+            setHoveredMesh(object);
+        } else {
+            gl.domElement.style.cursor = "default";
+            setHoveredMesh(null);
+        }
+    };
+
+    const handlePointerOut = (e) => {
+        // console.log("pointer out")
+        if (!clickedMeshCategoryRef.current) {
+            gl.domElement.style.cursor = "default";
+            setHoveredMesh(null);
+        }
+    };
 
     return (
         <>
-            <group ref={rootRef} />
+            <group
+                ref={rootRef}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerOver={handlePointerOver}
+                onPointerOut={handlePointerOut}
+            />
             <MeasurementLabels
                 scene={rootRef.current}
                 showMeasurements={showMeasurements}

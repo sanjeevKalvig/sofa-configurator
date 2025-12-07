@@ -1,24 +1,19 @@
 import React, { useRef, useState } from "react";
 import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
-import {
-  Environment,
-  OrbitControls,
-  PerspectiveCamera,
-} from "@react-three/drei";
+import { Environment, OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import { data } from "../config/data";
 import Lights from "./Lights";
 import { Model } from "./Model";
 import AntiAliasing from "./AntiAliasing";
-import CushionMaterialPicker from "./CushionMaterialPicker";
-import FabricMaterialPicker from "./FabricMaterialPicker";
-import LegMaterialPicker from "./LegMaterialPicker";
+import MaterialPicker from "./MaterialPicker";
+import SmoothOutline from "./SmoothOutline"
 
 export default function Scene({ showMeasurements, setShowMeasurements }) {
   const controlsRef = useRef();
-  const [showCushionPicker, setShowCushionPicker] = useState(false);
-  const [showFabricPicker, setShowFabricPicker] = useState(false);
-  const [showLegPicker, setShowLegPicker] = useState(false);
+  const [clickedMeshCategory, setClickedMeshCategory] = useState("")
+  const [hoveredMesh, setHoveredMesh] = useState(null);
+  const clickedMeshCategoryRef = useRef("");
 
   return (
     <>
@@ -58,25 +53,26 @@ export default function Scene({ showMeasurements, setShowMeasurements }) {
           showMeasurements={showMeasurements}
           setShowMeasurements={setShowMeasurements}
           controlsRef={controlsRef}
-          setShowCushionPicker={setShowCushionPicker}
-          setShowFabricPicker={setShowFabricPicker}
-          setShowLegPicker={setShowLegPicker}
+          setClickedMeshCategory={setClickedMeshCategory}
+          hoveredMesh={hoveredMesh}
+          setHoveredMesh={setHoveredMesh}
+          clickedMeshCategoryRef={clickedMeshCategoryRef}
         />
         <AntiAliasing controlsRef={controlsRef} />
+        <SmoothOutline hoveredMesh={hoveredMesh} />
       </Canvas>
       {/*  HTML Overlay - outside Canvas */}
-      <CushionMaterialPicker visible={showCushionPicker} />
-      <FabricMaterialPicker visible={showFabricPicker} />
-      <LegMaterialPicker visible={showLegPicker} />
+      <MaterialPicker clickedMeshCategory={clickedMeshCategory} />
+
 
       {/* Click outside to close */}
-      {(showCushionPicker || showFabricPicker || showLegPicker) && (
+      {clickedMeshCategory && (
         <div
           className="fixed inset-0 z-10"
           onClick={() => {
-            setShowCushionPicker(false);
-            setShowFabricPicker(false);
-            setShowLegPicker(false);
+            setClickedMeshCategory("")
+            clickedMeshCategoryRef.current = "";
+            setHoveredMesh(null)
           }}
         />
       )}
