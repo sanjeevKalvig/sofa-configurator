@@ -674,7 +674,281 @@ export const data = {
         }
       
         // Add more meshes here...
-  }
+  },
+
+  meshClickConfig: [
+    {
+      meshName: "Pillow001",
+      nameToDisplay:"Pillow1",
+      dimensions:"100  X  20  X  30",
+      camPos: {
+        x: 0.7,
+        y: 0.8,
+        z: 0.7
+      },
+      lookAt: {
+        x: 1.3,
+        y: -0.3,
+        z: -2.9
+      }
+
+    },
+    {
+      meshName: "Pillow",
+      nameToDisplay:"Pillow0",  
+      dimensions:"100  X  20  X  30",
+      camPos: {
+          x: -0.9,
+          y: 1.1,
+          z: 0.8
+        },
+        lookAt: {
+          x: -0.6,
+          y: -0.1,
+          z: -0.9
+        }
+    },
+    {
+      meshName: "Pillow002",
+      nameToDisplay:"Pillow2",  
+      dimensions:"100  X  20  X  30",
+      camPos: {
+          x: -0.3,
+          y: 1.1,
+          z: 0.9
+        },
+        lookAt: {
+          x: -0.6,
+          y: -0.1,
+          z: -0.5
+        }
+    },
+    {
+      meshName: "Towel",
+      nameToDisplay:"Towel",  
+      dimensions:"100  X  20  X  30",
+      camPos: {
+          x: 0.0,
+          y: 1.1,
+          z: 1.1
+        },
+        lookAt: {
+          x: 0.2,
+          y: 0.5,
+          z: 0.2
+        }
+    },
+    {
+      meshName: "Armrest",
+      nameToDisplay:"Armrest",  
+      dimensions:"100  X  20  X  30",
+      camPos: {
+          x: -2.2,
+          y: 0.6,
+          z: 0.0
+        },
+        lookAt: {
+          x: -0.9,
+          y: 0.2,
+          z: 0.0
+        }
+    },
+    {
+      meshName: "Armrest001",
+      nameToDisplay:"Armrest1",  
+      dimensions:"100  X  20  X  30",
+      camPos: {
+          x: 2.3,
+          y: 0.5,
+          z: 0.0
+        },
+        lookAt: {
+          x: 0.9,
+          y: 0.2,
+          z: 0.0
+        }
+    },
+    {
+      meshName: "Backrsupport",
+      nameToDisplay:"BackSupport",  
+      dimensions:"100  X  20  X  30",
+      camPos: {
+          x: -0.3,
+          y: 0.5,
+          z: -1.8
+        },
+        lookAt: {
+          x: -0.4,
+          y: 0.2,
+          z: 0.0
+        }
+    },
+    {
+      meshName: "Backrsupport001",
+      nameToDisplay:"Backsupoort1",  
+      dimensions:"100  X  20  X  30",
+      camPos: {
+          x: 0.6,
+          y: 0.6,
+          z: -1.5
+        },
+        lookAt: {
+          x: 0.5,
+          y: 0.3,
+          z: 0.1
+        }
+    },
+    {
+      meshName: "Seat",
+      nameToDisplay:"Seat0",  
+      dimensions:"100  X  20  X  30",
+      camPos: {
+          x: -0.6,
+          y: 1.3,
+          z: 1.2
+        },
+        lookAt: {
+          x: -0.5,
+          y: 0.3,
+          z: 0.1
+        }
+    },
+    {
+      meshName: "Seat001",
+      nameToDisplay:"Seat1",  
+      dimensions:"100  X  20  X  30",
+      camPos: {
+          x: 0.4,
+          y: 1.1,
+          z: 1.2
+        },
+        lookAt: {
+          x: 0.4,
+          y: 0.3,
+          z: 0.1
+        }
+    },
+    {
+      meshName: "Backrest001",
+      nameToDisplay:"Backrest1",  
+      dimensions:"100  X  20  X  30",
+      camPos: {
+          x: 0.4,
+          y: 1.5,
+          z: 0.9
+        },
+        lookAt: {
+          x: 0.4,
+          y: 0.7,
+          z: 0.1
+        }
+    },
+    {
+      meshName: "Backrest",
+      nameToDisplay:"Backrest0",  
+      dimensions:"100  X  20  X  30",
+      camPos: {
+          x: -0.5,
+          y: 1.2,
+          z: 0.8
+        },
+        lookAt: {
+          x: -0.6,
+          y: 0.7,
+          z: -0.3
+        }
+    },
+    {
+      meshName: "leg",
+      nameToDisplay:"Leg0",  
+      dimensions:"100  X  20  X  30",
+      camPos: {
+          x: -1.9,
+          y: 0.3,
+          z: 0.5
+        },
+        lookAt: {
+          x: 0.1,
+          y: -0.9,
+          z: -0.3
+        }
+    },
+    {
+      meshName: "leg001",
+      nameToDisplay:"Leg1",  
+      dimensions:"100  X  20  X  30",
+      camPos: {
+          x: -1.9,
+          y: 0.3,
+          z: 0.5
+        },
+        lookAt: {
+          x: 0.1,
+          y: -0.9,
+          z: -0.3
+        }
+    },
+    {
+      meshName: "leg002",
+      nameToDisplay:"Leg2",  
+      dimensions:"100  X  20  X  30",
+      camPos: {
+          x: -1.9,
+          y: 0.3,
+          z: 0.5
+        },
+        lookAt: {
+          x: 0.1,
+          y: -0.9,
+          z: -0.3
+        }
+    },
+    {
+      meshName: "leg003",
+      nameToDisplay:"Leg3",  
+      dimensions:"100  X  20  X  30",
+      camPos: {
+          x: 1.6,
+          y: 0.3,
+          z: 0.5
+        },
+        lookAt: {
+          x: 0.4,
+          y: -0.6,
+          z: -0.3
+        }
+    },
+    {
+      meshName: "leg004",
+      nameToDisplay:"Leg4",  
+      dimensions:"100  X  20  X  30",
+      camPos: {
+          x: 1.6,
+          y: 0.3,
+          z: 0.5
+        },
+        lookAt: {
+          x: 0.4,
+          y: -0.6,
+          z: -0.3
+        }
+    },
+    {
+      meshName: "leg005",
+      nameToDisplay:"Leg5",  
+      dimensions:"100  X  20  X  30",
+      camPos: {
+          x: 1.6,
+          y: 0.3,
+          z: 0.5
+        },
+        lookAt: {
+          x: 0.4,
+          y: -0.6,
+          z: -0.3
+        }
+    },
+  ]
 };
 
 

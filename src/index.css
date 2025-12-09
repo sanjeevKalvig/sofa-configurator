@@ -1,1 +1,29 @@
 @import "tailwindcss";
+
+.animate-text{
+    opacity: 0;
+    animation: textBounce 4s 200ms infinite;
+    transition: all;
+}
+@keyframes textBounce {
+    0%{
+        opacity: 0;
+        transform: translateY(0px);
+    }
+    25%{
+        opacity: 1;
+        transform: translateY(0px);
+    }
+    50%{
+        opacity: 1;
+        transform: translateY(5px);
+    }
+    75%{
+        opacity: 1;
+        transform: translateY(-5px);
+    }
+    100%{
+        opacity: 0;
+        transform: translateY(0px);
+    }
+}

@@ -9,6 +9,7 @@ import { getMaterialById } from "../config/getterMappedDatafunctions";
 import { getTexture } from "../utils/textureCache";
 import MeasurementLabels from "./MeasurementLabels";
 import Effects from "./Effects";
+import gsap from "gsap";
 
 /**
  * Helper: create a MeshStandardMaterial from a material texture set
@@ -80,7 +81,9 @@ export const Model = ({
     setClickedMeshCategory,
     setHoveredMesh,
     hoveredMesh,
-    clickedMeshCategoryRef
+    clickedMeshCategoryRef,
+    controlsRef,
+    clickedMeshCategory,
 }) => {
     const { camera, gl } = useThree();
     const rootRef = useRef();
@@ -399,12 +402,14 @@ export const Model = ({
     });
 
     const handlePointerDown = (e) => {
+      if(clickedMeshCategory) return;
         // console.log("pointer down")
         isDragging.current = false;
         downPos.current = { x: e.clientX, y: e.clientY };
     };
 
     const handlePointerMove = (e) => {
+      if(clickedMeshCategory) return;
         // console.log("pointer move")
         const dx = Math.abs(e.clientX - downPos.current.x);
         const dy = Math.abs(e.clientY - downPos.current.y);
@@ -415,6 +420,7 @@ export const Model = ({
     };
 
     const handlePointerUp = (e) => {
+      if(clickedMeshCategory) return;
         // console.log("pointer up")
         if (isDragging.current) return;  // ⛔ Ignore end-of-drag clicks
 
@@ -435,6 +441,29 @@ export const Model = ({
         if (intersects.length > 0) {
             const clickedObject = intersects[0].object;
             const category = meshToCategory[clickedObject.name];
+
+            const targetMeshData = data.meshClickConfig.find((mesh) => mesh.meshName == clickedObject.name);
+            if(!targetMeshData) return;
+
+            gsap.to(camera.position, {
+                x: targetMeshData.camPos.x,
+                y: targetMeshData.camPos.y,
+                z: targetMeshData.camPos.z,
+                duration: 0.8,
+                // ease: "power2.out"
+            });
+            // controlsRef.current.enabled = false;
+            gsap.to(controlsRef.current.target, {
+                x: targetMeshData.lookAt.x,
+                y: targetMeshData.lookAt.y,
+                z: targetMeshData.lookAt.z,
+                duration: 0.8,
+                // ease: "power2.out",
+                // onComplete: () => {
+                //     controlsRef.current.enabled = true;
+                // }
+            });
+
             if (category) {
                 setClickedMeshCategory(category);
                 clickedMeshCategoryRef.current = category;
@@ -450,6 +479,7 @@ export const Model = ({
     };
 
     const handlePointerOver = (e) => {
+      if(clickedMeshCategory) return;
         // console.log("pointer over")
         e.stopPropagation();
         const object = e.object;
@@ -473,6 +503,7 @@ export const Model = ({
     };
 
     const handlePointerOut = (e) => {
+      if(clickedMeshCategory) return;
         // console.log("pointer out")
         if (!clickedMeshCategoryRef.current) {
             gl.domElement.style.cursor = "default";

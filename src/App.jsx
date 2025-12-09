@@ -14,6 +14,10 @@ import CheckoutConfirm from "./pages/CheckoutConfirm";
 
 function HomePage() {
   const [showMeasurements, setShowMeasurements] = useState(false);
+  const [activeMaterial, setActiveMaterial] = useState(null);
+  const [categorySelectedMaterial, setCategorySelectedMaterial] = useState({});
+  const [clickedMeshCategory, setClickedMeshCategory] = useState("")
+
 
   return (
     <div className="h-screen bg-blue-100 p-4">
@@ -21,11 +25,21 @@ function HomePage() {
         <Scene
           showMeasurements={showMeasurements}
           setShowMeasurements={setShowMeasurements}
+          categorySelectedMaterial={categorySelectedMaterial}
+          activeMaterial={activeMaterial}
+          setActiveMaterial={setActiveMaterial}
+          setCategorySelectedMaterial={setCategorySelectedMaterial}
+          clickedMeshCategory={clickedMeshCategory}
+          setClickedMeshCategory={setClickedMeshCategory}
         />
         <UI
           showMeasurements={showMeasurements}
           setShowMeasurements={setShowMeasurements}
+          setActiveMaterial={setActiveMaterial}
+          setCategorySelectedMaterial={setCategorySelectedMaterial}
           onCheckout={() => (window.location.href = "/checkout")}
+          clickedMeshCategory={clickedMeshCategory}
+          setClickedMeshCategory={setClickedMeshCategory}
         />
       </div>
     </div>

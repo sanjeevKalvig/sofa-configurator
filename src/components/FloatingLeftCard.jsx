@@ -4,7 +4,7 @@ import { getMaterialsByCategories } from '../config/getterMappedDatafunctions';
 import { useProductPricing } from '../hooks/useProductPricing';
 import styles from '../stylesheet/ToggleSwtich.module.css';
 
-function FloatingLeftCart({ showMeasurements, setShowMeasurements }) {
+function FloatingLeftCart({ showMeasurements, setShowMeasurements, setActiveMaterial, setCategorySelectedMaterial, clickedMeshCategory, setClickedMeshCategory }) {
   const swatches = getMaterialsByCategories();
   const { updateSelectedOption, selectedOptions } = useProductPricing();
   const [selected, setSelected] = useState({});
@@ -44,7 +44,14 @@ function FloatingLeftCart({ showMeasurements, setShowMeasurements }) {
     return () => window.removeEventListener("material-change", handleMaterialChange);
   }, [updateSelectedOption]);
 
-  const onMaterialClick = (category, materialId) => {
+  const onMaterialClick = (category, materialId, materialName) => {
+    if (clickedMeshCategory == category) {
+      setActiveMaterial({ materialId: materialId, materialName: materialName });
+    }
+    setCategorySelectedMaterial((prevDetail) => ({
+      ...prevDetail,
+      [category]: { materialId: materialId, materialName: materialName }
+    }))
     window.dispatchEvent(new CustomEvent("material-change", { detail: { category, materialId } }));
     setSelected((prev) => ({ ...prev, [category]: materialId }));
     const key = `${category}-${materialId}`;
@@ -77,19 +84,19 @@ function FloatingLeftCart({ showMeasurements, setShowMeasurements }) {
     <>
       {/* Enhanced Collapsed State with Icons and Animated Border */}
       {(isCollapsed || (!isCollapsed && !isExpanded)) && (
-        <div 
+        <div
           className="absolute top-1/2 left-4 -translate-y-1/2 pointer-events-auto z-10 cursor-pointer group"
           onClick={toggleExpand}
         >
           <div className="relative">
             {/* Main Container with Animated Border */}
             <div className="relative w-12 h-[8rem] bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/80 flex flex-col items-center justify-between py-3 overflow-hidden ">
-              
+
               {/* Animated Border */}
               <div className="absolute inset-0 rounded-2xl p-[2px]">
                 <div className="w-full h-full rounded-2xl bg-gradient-to-r from-emerald-400 via-blue-400 to-purple-400 animate-spin-slow opacity-70"></div>
               </div>
-              
+
               {/* Inner Background */}
               <div className="absolute inset-[2px] bg-white/95 rounded-2xl backdrop-blur-sm z-0"></div>
 
@@ -109,11 +116,10 @@ function FloatingLeftCart({ showMeasurements, setShowMeasurements }) {
               </div>
 
               {/* Completion Status Dot */}
-              <div className={`absolute top-1 right-1 w-2 h-2 rounded-full z-20 ${
-                isConfigurationComplete() 
-                  ? 'bg-emerald-500 shadow-[0_0_6px_1px_rgba(16,185,129,0.6)]' 
+              <div className={`absolute top-1 right-1 w-2 h-2 rounded-full z-20 ${isConfigurationComplete()
+                  ? 'bg-emerald-500 shadow-[0_0_6px_1px_rgba(16,185,129,0.6)]'
                   : 'bg-amber-500 shadow-[0_0_6px_1px_rgba(245,158,11,0.6)] animate-pulse'
-              }`} />
+                }`} />
 
               {/* Hover Glow Effect */}
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-emerald-400/10 via-blue-400/10 to-purple-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-0" />
@@ -226,7 +232,7 @@ function FloatingLeftCart({ showMeasurements, setShowMeasurements }) {
                         return (
                           <button
                             key={mat.id}
-                            onClick={() => onMaterialClick(category, mat.id)}
+                            onClick={() => onMaterialClick(category, mat.id, mat.materialName)}
                             className={`relative h-8 w-8 rounded-full border-2 transition-all duration-200 group/button
                               ${isActive
                                 ? "border-emerald-500 ring-2 ring-emerald-200 shadow-lg scale-110"
@@ -242,7 +248,7 @@ function FloatingLeftCart({ showMeasurements, setShowMeasurements }) {
                           >
                             {/* Hover overlay */}
                             <span className="absolute inset-0 rounded-full bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover/button:opacity-100 transition-opacity duration-200 pointer-events-none" />
-                            
+
                             {/* Active indicator */}
                             {isActive && (
                               <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white shadow-sm" />
